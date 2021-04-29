@@ -2,9 +2,8 @@
 Changelog
 =========
 
-Version 0.1
-===========
+Version 0.0.1
+=============
 
-- Feature A added
-- FIX: nasty bug #1729 fixed
-- add your changes here!
+- Add construction, write, read of Fibonacci grid
+- Add Fibonacci grid realization for 6.25, 12.5 and 25 km

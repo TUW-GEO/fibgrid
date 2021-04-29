@@ -2,14 +2,7 @@
 fibgrid
 =======
 
-
-Add a short description here!
-
-
-Description
-===========
-
-A longer description of your project goes here...
+Creating Fibonacci grid and read pre-computed grids.
 
 
 .. _pyscaffold-notes:
