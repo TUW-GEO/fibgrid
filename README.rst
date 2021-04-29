@@ -2,7 +2,7 @@
 fibgrid
 =======
 
-.. image:: https://github.com/TUW-GEO/fibgrid/workflows/ci.yml/badge.svg
+.. image:: https://github.com/TUW-GEO/fibgrid/workflows/ci/badge.svg
    :target: https://github.com/TUW-GEO/fibgrid/actions/workflows/ci.yml
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/fibgrid/badge.svg?branch=master
