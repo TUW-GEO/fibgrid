@@ -138,4 +138,8 @@ class FibLandGrid(CellGrid):
 
         lon, lat, cell, gpi, self.metadata = read_grid_file(
             n, geodatum=geodatum)
-        super().__init__(lon, lat, cell, gpi, geodatum=geodatum)
+
+        subset = np.nonzero((self.metadata['land_mask_hw'] > 50) &
+                            (self.metadata['land_mask_fw'] > 50))[0]
+
+        super().__init__(lon, lat, cell, gpi, subset=subset, geodatum=geodatum)
