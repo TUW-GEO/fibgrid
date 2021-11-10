@@ -46,6 +46,7 @@ class TestConstruction(unittest.TestCase):
         """
         self.test_path = mkdtemp()
         self.n = [6600000, 1650000, 430000]
+        self.geodatum = ['sphere', 'WGS84']
 
     def test_fibgrid(self):
         """
@@ -60,11 +61,14 @@ class TestConstruction(unittest.TestCase):
         """
         Test read/write Fibonacci grid.
         """
-        for n in self.n:
-            filename = os.path.join(self.test_path, 'fibgrid_{}.NC'.format(n))
-            write_grid(filename, n)
-            data = read_grid(filename)
-            np.testing.assert_equal(data['gpi'], np.arange(n*2+1))
+        for geodatum in self.geodatum:
+            for n in self.n:
+                filename = os.path.join(
+                    self.test_path, 'fibgrid_{}_n{}.nc'.format(
+                        geodatum.lower(), n))
+                write_grid(filename, n)
+                data = read_grid(filename)
+                np.testing.assert_equal(data['gpi'], np.arange(n*2+1))
 
 
 if __name__ == '__main__':

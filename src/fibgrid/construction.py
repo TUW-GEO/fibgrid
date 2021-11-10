@@ -32,7 +32,7 @@ Construct Fibonacci grid.
 import netCDF4
 import numpy as np
 from numba import jit
-from pygeogrids.grids import BasicGrid
+from pyproj import CRS, Transformer
 
 
 @jit(nopython=True, cache=True)
@@ -58,8 +58,8 @@ def compute_fib_grid(n):
     """
     points = np.arange(-n, n+1)
     gpi = np.arange(points.size)
-    lat = np.empty(points.size)
-    lon = np.empty(points.size)
+    lat = np.empty(points.size, dtype=np.float64)
+    lon = np.empty(points.size, dtype=np.float64)
     phi = (1. + np.sqrt(5))/2.
 
     for i in points:
@@ -73,52 +73,36 @@ def compute_fib_grid(n):
     return points, gpi, lon, lat
 
 
-def compute_grid_stats(n, k=5, geodatum='WGS84'):
+def compute_fib_grid_wgs84(n):
     """
-    Compute grid statistics of k nearest neighbors.
+    Computation of Fibonacci lattice on a sphere and coordinated transformed
+    to WGS84 ellipsoid.
 
     Parameters
     ----------
     n : int
         Number of grid points in the Fibonacci lattice.
-    k : int, optional
-        Nearest neighbor (default: 5).
-    geodatum : str, optional
-        Geodatum (default: 'WGS84')
     """
-    points, gpi, lon, lat = compute_fib_grid(n)
+    crs_wgs84 = CRS.from_epsg(4326)
+    crs_sphere = CRS.from_proj4(
+        '+proj=lonlat +ellps=sphere +R=6370997 +towgs84=0,0,0')
 
-    grid = BasicGrid(lon, lat, geodatum=geodatum)
-    nn, dist = grid.find_k_nearest_gpi(lon, lat, k=5)
+    points, gpi, sphere_lon, sphere_lat = compute_fib_grid(n)
+    transformer = Transformer.from_crs(crs_sphere, crs_wgs84)
 
-    print('Min distance:    {:10.4f}'.format(dist[:, 1:].min()))
-    print('Max distance:    {:10.4f}'.format(dist[:, 1:].max()))
-    print('Mean distance:   {:10.4f}'.format(dist[:, 1:].mean()))
-    print('Median distance: {:10.4f}'.format(np.median(dist[:, 1:])))
-    print('Std distance:    {:10.4f}'.format(dist[:, 1:].std()))
+    wgs84_lon = np.zeros(sphere_lon.size, dtype=np.float64)
+    wgs84_lat = np.zeros(sphere_lat.size, dtype=np.float64)
 
-    for i in range(1, k):
-        print('\n')
-        print('------- Neighbor #{:} -------'.format(i))
-        print('Min distance:    {:10.4f}'.format(dist[:, i].min()))
-        print('Max distance:    {:10.4f}'.format(dist[:, i].max()))
-        print('Mean distance:   {:10.4f}'.format(dist[:, i].mean()))
-        print('Median distance: {:10.4f}'.format(np.median(dist[:, i])))
-        print('Std distance:    {:10.4f}'.format(dist[:, i].std()))
+    i = 0
+    for lon, lat in zip(sphere_lon, sphere_lat):
+        wgs84_lat[i], wgs84_lon[i] = transformer.transform(lon, lat)
+        i = i + 1
 
-    print('\n')
-    lat_bands = range(-90, 90, 5)
-    for band in lat_bands:
-        subgrid = grid.subgrid_from_gpis(grid.get_bbox_grid_points(
-            latmin=band, latmax=band+5))
-        nn, dist_subgrid = grid.find_k_nearest_gpi(
-            subgrid.arrlon, subgrid.arrlat, k=k)
-        print('Band [{} -- {}] deg: {:10.4f}'.format(
-            band, band+5, dist_subgrid[:, 1:].mean()))
+    return points, gpi, wgs84_lon, wgs84_lat
 
 
-def write_grid(filename, n, nc_fmt='NETCDF4_CLASSIC', nc_zlib=True,
-               nc_complevel=2):
+def write_grid(filename, n, nc_fmt='NETCDF4', nc_zlib=True,
+               nc_complevel=2, geodatum='WGS84'):
     """
     Write grid file for Fibonacci lattice.
 
@@ -137,7 +121,12 @@ def write_grid(filename, n, nc_fmt='NETCDF4_CLASSIC', nc_zlib=True,
         The optional keyword complevel is an integer between 1 and 9
         describing the level of compression desired (default 2).
     """
-    points, gpi, lon, lat = compute_fib_grid(n)
+    if geodatum == 'WGS84':
+        points, gpi, lon, lat = compute_fib_grid_wgs84(n)
+    elif geodatum == 'sphere':
+        points, gpi, lon, lat = compute_fib_grid(n)
+    else:
+        raise ValueError('Geodatum unknown')
 
     with netCDF4.Dataset(filename, 'w', format=nc_fmt) as fp:
 
@@ -201,3 +190,8 @@ def read_grid(filename, variables=['gpi', 'lon', 'lat']):
             data[var] = fp.variables[var][:]
 
     return data
+
+
+if __name__ == '__main__':
+    n = 6600000
+    compute_fib_grid_wgs84(n)

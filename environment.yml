@@ -5,6 +5,7 @@ channels:
 dependencies:
   - numpy
   - netCDF4
+  - pyproj
   - numba
   - pip
   - pip:

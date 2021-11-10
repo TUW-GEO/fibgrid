@@ -36,7 +36,7 @@ import numpy as np
 from pygeogrids.grids import CellGrid
 
 
-def read_grid_file(n):
+def read_grid_file(n, geodatum='WGS84'):
     """
     Read pre-computed grid files.
 
@@ -59,8 +59,9 @@ def read_grid_file(n):
     metadata : dict
         Metadata information of the grid.
     """
-    filename = os.path.join(os.path.dirname(__file__),
-                            'files', 'fibgrid_n{}.nc'.format(n))
+    filename = os.path.join(
+        os.path.dirname(__file__), 'files',
+        'fibgrid_{}_n{}.nc'.format(geodatum.lower(), n))
 
     metadata_fields = ['land_frac_fw', 'land_frac_hw',
                        'land_mask_hw', 'land_mask_fw']
@@ -104,5 +105,37 @@ class FibGrid(CellGrid):
         else:
             raise ValueError('Resolution unknown')
 
-        lon, lat, cell, gpi, self.metadata = read_grid_file(n)
+        lon, lat, cell, gpi, self.metadata = read_grid_file(
+            n, geodatum=geodatum)
+        super().__init__(lon, lat, cell, gpi, geodatum=geodatum)
+
+
+class FibLandGrid(CellGrid):
+
+    """
+    Fibonacci grid with active points over land defined by land fraction.
+    """
+
+    def __init__(self, res, geodatum='WGS84'):
+        """
+        Initialize FibGrid.
+
+        Parameters
+        ----------
+        res : int
+            Sampling.
+        geodatum : str, optional
+            Geodatum (default: 'WGS84')
+        """
+        if res == 6.25:
+            n = 6600000
+        elif res == 12.5:
+            n = 1650000
+        elif res == 25:
+            n = 430000
+        else:
+            raise ValueError('Resolution unknown')
+
+        lon, lat, cell, gpi, self.metadata = read_grid_file(
+            n, geodatum=geodatum)
         super().__init__(lon, lat, cell, gpi, geodatum=geodatum)
