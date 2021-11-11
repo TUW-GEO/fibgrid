@@ -190,8 +190,3 @@ def read_grid(filename, variables=['gpi', 'lon', 'lat']):
             data[var] = fp.variables[var][:]
 
     return data
-
-
-if __name__ == '__main__':
-    n = 6600000
-    compute_fib_grid_wgs84(n)

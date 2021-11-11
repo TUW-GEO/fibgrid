@@ -64,7 +64,8 @@ def read_grid_file(n, geodatum='WGS84'):
         'fibgrid_{}_n{}.nc'.format(geodatum.lower(), n))
 
     metadata_fields = ['land_frac_fw', 'land_frac_hw',
-                       'land_mask_hw', 'land_mask_fw']
+                       'land_mask_hw', 'land_mask_fw',
+                       'land_flag']
     metadata_list = []
     with netCDF4.Dataset(filename) as fp:
         lon = fp.variables['lon'][:]
@@ -139,7 +140,6 @@ class FibLandGrid(CellGrid):
         lon, lat, cell, gpi, self.metadata = read_grid_file(
             n, geodatum=geodatum)
 
-        subset = np.nonzero((self.metadata['land_mask_hw'] > 50) &
-                            (self.metadata['land_mask_fw'] > 50))[0]
+        subset = np.nonzero(self.metadata['land_flag'])
 
         super().__init__(lon, lat, cell, gpi, subset=subset, geodatum=geodatum)
