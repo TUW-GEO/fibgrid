@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.3
+=============
+
+- Fix upload pypi actions
+
 Version 0.0.2
 =============
 
