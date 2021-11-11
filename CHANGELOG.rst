@@ -6,6 +6,7 @@ Version 0.0.2
 =============
 
 - Add Fibonacci grid realization for Geodatum WGS84 at 6.25, 12.5 and 25 km
+- Add Fibonacci grid files for WGS84
 
 Version 0.0.1
 =============
