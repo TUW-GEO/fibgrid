@@ -23,6 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           # Install build dependencies
           python -m pip install setuptools wheel twine
+          pip install setuptools_scm
 
       - name: Build and Upload to pypi
         run: |
