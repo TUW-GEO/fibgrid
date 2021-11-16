@@ -140,6 +140,6 @@ class FibLandGrid(CellGrid):
         lon, lat, cell, gpi, self.metadata = read_grid_file(
             n, geodatum=geodatum)
 
-        subset = np.nonzero(self.metadata['land_flag'])
+        subset = np.nonzero(self.metadata['land_flag'])[0]
 
         super().__init__(lon, lat, cell, gpi, subset=subset, geodatum=geodatum)
