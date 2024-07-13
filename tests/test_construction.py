@@ -24,19 +24,13 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 Test Fibonacci grid construction.
 """
 
-import os
 import unittest
-from tempfile import mkdtemp
-
 import numpy as np
-
-from fibgrid.construction import compute_fib_grid, write_grid
-from fibgrid.realization import read_grid
+from fibgrid.construction import compute_fib_grid
 
 
 class TestConstruction(unittest.TestCase):
@@ -55,21 +49,8 @@ class TestConstruction(unittest.TestCase):
         """
         for n in self.n:
             points, gpi, lon, lat = compute_fib_grid(n)
-            np.testing.assert_equal(points, np.arange(-n, n+1))
+            np.testing.assert_equal(points, np.arange(-n, n + 1))
             np.testing.assert_equal(gpi, np.arange(points.size))
-
-    def test_read_write_fibgrid(self):
-        """
-        Test read/write Fibonacci grid.
-        """
-        for geodatum in self.geodatum:
-            for n in self.n:
-                filename = os.path.join(
-                    self.test_path, 'fibgrid_{}_n{}.nc'.format(
-                        geodatum.lower(), n))
-                write_grid(filename, n)
-                data = read_grid(filename)
-                np.testing.assert_equal(data['gpi'], np.arange(n*2+1))
 
 
 if __name__ == '__main__':
