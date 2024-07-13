@@ -1,7 +1,4 @@
-name: fibgrid_env
-channels:
-  - defaults
-  - conda-forge
+name: env
 dependencies:
   - numpy
   - netCDF4
@@ -10,7 +7,3 @@ dependencies:
   - pip
   - pip:
     - pygeogrids
-    - pytest
-    - pytest-cov
-    - pytest-mpl
-    - flake8

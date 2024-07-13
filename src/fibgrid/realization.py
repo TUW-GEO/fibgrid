@@ -1,4 +1,4 @@
-# Copyright (c) 2021, TU Wien, Department of Geodesy and Geoinformation
+# Copyright (c) 2024, TU Wien
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -68,12 +68,12 @@ def read_grid_file(n, geodatum='WGS84'):
                        'land_flag']
     metadata_list = []
     with netCDF4.Dataset(filename) as fp:
-        lon = fp.variables['lon'][:]
-        lat = fp.variables['lat'][:]
-        cell = fp.variables['cell'][:]
-        gpi = fp.variables['gpi'][:]
+        lon = fp.variables['lon'][:].data
+        lat = fp.variables['lat'][:].data
+        cell = fp.variables['cell'][:].data
+        gpi = fp.variables['gpi'][:].data
         for f in metadata_fields:
-            metadata_list.append(fp.variables[f][:])
+            metadata_list.append(fp.variables[f][:].data)
 
     metadata = np.rec.fromarrays(metadata_list, names=metadata_fields)
 

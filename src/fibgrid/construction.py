@@ -1,4 +1,4 @@
-# Copyright (c) 2021, TU Wien, Department of Geodesy and Geoinformation
+# Copyright (c) 2024, TU Wien
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -166,27 +166,3 @@ def write_grid(filename, n, nc_fmt='NETCDF4', nc_zlib=True,
 
         global_ncatts = {'creator': 'fibgrid'}
         fp.setncatts(global_ncatts)
-
-
-def read_grid(filename, variables=['gpi', 'lon', 'lat']):
-    """
-    Read grid file stored as NetCDF.
-
-    Parameters
-    ----------
-    filename : str
-        Grid filename.
-    variables : list of str, optional
-        Variables to be read (default: ['gpi', 'lon', 'lat'])
-
-    Returns
-    -------
-    data : dict
-        Grid file information.
-    """
-    data = {}
-    with netCDF4.Dataset(filename) as fp:
-        for var in variables:
-            data[var] = fp.variables[var][:]
-
-    return data

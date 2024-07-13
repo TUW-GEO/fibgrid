@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.5
+=============
+
+- GPI, longitude, latitude of grid object no longer masked array
+
 Version 0.0.4
 =============
 
