@@ -39,9 +39,7 @@ class TestConstruction(unittest.TestCase):
         """
         Define grids.
         """
-        self.test_path = mkdtemp()
         self.n = [6600000, 1650000, 430000]
-        self.geodatum = ['sphere', 'WGS84']
 
     def test_fibgrid(self):
         """
