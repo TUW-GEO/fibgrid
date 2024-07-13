@@ -35,7 +35,8 @@ from tempfile import mkdtemp
 
 import numpy as np
 
-from fibgrid.construction import compute_fib_grid, write_grid, read_grid
+from fibgrid.construction import compute_fib_grid, write_grid
+from fibgrid.realization import read_grid
 
 
 class TestConstruction(unittest.TestCase):
