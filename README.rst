@@ -19,7 +19,8 @@ Creating Fibonacci grid and read pre-computed grids.
 Citation
 ========
 
-[![Zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.14187002.svg)](https://doi.org/10.5281/zenodo.14187002)
+.. image:: https://zenodo.org/badge/14187002.svg
+   :target: https://zenodo.org/badge/latestdoi/14187002
 
 If you use the software in a publication then please cite it using the Zenodo
 DOI. Be aware that this badge links to the latest package version.
