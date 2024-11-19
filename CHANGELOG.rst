@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.6
+=============
+
+- New release to retrieve zenodo doi
+
 Version 0.0.5
 =============
 
