@@ -12,12 +12,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: ["ubuntu-latest", "windows-latest"]
-        ymlfile: ["environment.yml"]
-
+        os: ["ubuntu-latest", "windows-latest"] # currently windows is not tested
+        python-version: ['3.8', '3.12']
+        ymlfile: ['environment.yml']
+    name: Py${{ matrix.python-version }}@${{ matrix.os }}|${{ matrix.ymlfile }}
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: false # does not work with self-hosted testdata
       - name: Checkout test data
