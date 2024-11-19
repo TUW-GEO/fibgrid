@@ -8,15 +8,13 @@ on:
 
 jobs:
   build:
-    name: Build py${{ matrix.python-version }} @ ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest"] # currently windows is not tested
-        python-version: ['3.8', '3.12']
-        ymlfile: ['environment.yml']
-    name: Py${{ matrix.python-version }}@${{ matrix.os }}|${{ matrix.ymlfile }}
+        python-version: ['3.8', ,'3.12']
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+    name: py${{ matrix.python-version }}@${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
         with:
