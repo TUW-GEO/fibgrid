@@ -1,4 +1,4 @@
-name: Automated Tests
+name: CI/CD
 
 on:
   push:
@@ -7,10 +7,11 @@ on:
     - cron: "0 0 * * *" # daily
 
 jobs:
+
   build:
     strategy:
       matrix:
-        python-version: ['3.8', ,'3.12']
+        python-version: ['3.8', '3.12']
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
     name: py${{ matrix.python-version }}@${{ matrix.os }}
     runs-on: ${{ matrix.os }}
