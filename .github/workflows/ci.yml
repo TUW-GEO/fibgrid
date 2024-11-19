@@ -28,12 +28,12 @@ jobs:
           git submodule update
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
-          miniforge-version: "latest"
-          channel-priority: flexible
+          miniconda-version: "latest"
+          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          environment-file: ${{ matrix.ymlfile }}
-          activate-environment: env
+          environment-file: environment.yml
+          activate-environment: pytesmo
+          channel-priority: flexible
           auto-activate-base: false
       - name: Print infos
         shell: bash -l {0}
