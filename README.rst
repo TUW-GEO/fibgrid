@@ -28,7 +28,7 @@ In the context of transforming Fibonacci grid points to an ellipsoid, the coordi
 Grid construction
 -----------------
 
-Creating a Fibonacci grid based on given number of points.
+Creating a Fibonacci grid based on a given number of points.
 
 .. code-block:: python
 
@@ -40,11 +40,11 @@ Creating a Fibonacci grid based on given number of points.
 Grid realization
 ----------------
 
-Three different Fibonacci grids can be directly loaded with different sampling distances. Each grid can be loaded with spherical coordinates or WGS84 coordinates.
+Three different Fibonacci grids can be directly loaded with different sampling distances (6.25 km, 12.5 km and 25 km). Each grid is given in spherical and WGS84 latitude and longitude coordinates.
 
-- 6.25 km (N=6,600,000)
-- 12.5 km (N=1,650,000)
-- 25 km (N=430,000)
+- approx. 6.25 km (N=6,600,000)
+- approx. 12.5 km (N=1,650,000)
+- approx. 25 km (N=430,000)
 
 .. code-block:: python
 
