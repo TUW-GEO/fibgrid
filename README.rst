@@ -14,7 +14,16 @@ fibgrid
 .. image:: https://readthedocs.org/projects/fibgrid/badge/?version=latest
    :target: http://fibgrid.readthedocs.org/
 
-Creating Fibonacci grid and read pre-computed grids.
+Fibonacci grid
+==============
+
+The Fibonacci Grid is a method for distributing points uniformly across the surface of a sphere. It is inspired by the Fibonacci sequence and the golden angle to ensure a near-equal area distribution of points, making it ideal for applications that require unbiased global sampling. Points are systematically spaced in latitude and longitude, avoiding clustering at the poles, which is a common issue with traditional latitude-longitude grids.
+
+Constructing the grid involves distributing points along the vertical axis of the sphere (latitude) and rotating them around the sphere’s horizontal axis (longitude) based on the golden angle. This deterministic approach is computationally efficient and scales easily by adjusting the number of points. The resulting grid is particularly suitable for representing global data with uniform coverage, making it useful for tasks like climate modeling, ocean simulation, and satellite data representation.
+
+The Fibonacci Grid is valued for its simplicity and uniformity, offering an effective balance between computational efficiency and spatial accuracy. While it does not achieve exact equal-area partitioning or hierarchical refinement like some specialized grids, its versatility and ease of implementation make it a popular choice for applications requiring discrete global grids.
+
+In the context of transforming Fibonacci grid points to an ellipsoid, the coordinates are first calculated on a sphere and then each point is projected onto the ellipsoidal surface. This two-step process ensures that the initial uniform distribution of points across the sphere is preserved while adapting the grid to the Earth's ellipsoidal shape. Once transformed to the ellipsoid, the grid becomes compatible with real-world geodetic Coordinate Reference Systems (CRS) like WGS84, allowing seamless integration with e.g. satellite data. However, a disadvantage is that the transformation may introduce slight non-uniformities, as the ellipsoid's curvature differs from that of the sphere. These distortions are typically minor and acceptable for most applications but could be a limitation in scenarios requiring exact equal-area distributions.
 
 Citation
 ========
