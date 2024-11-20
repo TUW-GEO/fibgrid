@@ -25,6 +25,38 @@ The Fibonacci Grid is valued for its simplicity and uniformity, offering an effe
 
 In the context of transforming Fibonacci grid points to an ellipsoid, the coordinates are first calculated on a sphere and then each point is projected onto the ellipsoidal surface. This two-step process ensures that the initial uniform distribution of points across the sphere is preserved while adapting the grid to the Earth's ellipsoidal shape. Once transformed to the ellipsoid, the grid becomes compatible with real-world geodetic Coordinate Reference Systems (CRS) like WGS84, allowing seamless integration with e.g. satellite data. However, a disadvantage is that the transformation may introduce slight non-uniformities, as the ellipsoid's curvature differs from that of the sphere. These distortions are typically minor and acceptable for most applications but could be a limitation in scenarios requiring exact equal-area distributions.
 
+Grid construction
+-----------------
+
+Creating a Fibonacci grid based on given number of points.
+
+```python
+
+    from fibgrid.construction import compute_fib_grid
+
+    n = 6600000
+    points, gpi, lon, lat = compute_fib_grid(n)
+```
+
+Grid realization
+----------------
+
+Three different Fibonacci grids can be directly loaded with different sampling distances. Each grid can be loaded with spherical coordinates or WGS84 coordinates.
+
+- 6.25 km (N=6,600,000)
+- 12.5 km (N=1,650,000)
+- 25 km (N=430,000)
+
+
+```python
+
+    from fibgrid.realization import FibGrid
+
+    sampling = 12.5
+    sphere_fb = FibGrid(sampling, geodatum="sphere")
+    wgs84_fb = FibGrid(sampling, geodatum="WGS84")
+```
+
 Citation
 ========
 
