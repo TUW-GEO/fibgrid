@@ -30,13 +30,12 @@ Grid construction
 
 Creating a Fibonacci grid based on given number of points.
 
-```python
+.. code-block:: python
 
     from fibgrid.construction import compute_fib_grid
 
     n = 6600000
     points, gpi, lon, lat = compute_fib_grid(n)
-```
 
 Grid realization
 ----------------
@@ -47,15 +46,13 @@ Three different Fibonacci grids can be directly loaded with different sampling d
 - 12.5 km (N=1,650,000)
 - 25 km (N=430,000)
 
-
-```python
+.. code-block:: python
 
     from fibgrid.realization import FibGrid
 
     sampling = 12.5
     sphere_fb = FibGrid(sampling, geodatum="sphere")
     wgs84_fb = FibGrid(sampling, geodatum="WGS84")
-```
 
 Citation
 ========
