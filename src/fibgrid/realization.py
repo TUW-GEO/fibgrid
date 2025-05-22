@@ -97,11 +97,12 @@ class FibGrid(CellGrid):
         geodatum : str, optional
             Geodatum (default: 'WGS84')
         """
-        if res == 6.25:
+        self.res = res
+        if self.res == 6.25:
             n = 6600000
-        elif res == 12.5:
+        elif self.res == 12.5:
             n = 1650000
-        elif res == 25:
+        elif self.res == 25:
             n = 430000
         else:
             raise ValueError('Resolution unknown')
@@ -128,11 +129,12 @@ class FibLandGrid(CellGrid):
         geodatum : str, optional
             Geodatum (default: 'WGS84')
         """
-        if res == 6.25:
+        self.res = res
+        if self.res == 6.25:
             n = 6600000
-        elif res == 12.5:
+        elif self.res == 12.5:
             n = 1650000
-        elif res == 25:
+        elif self.res == 25:
             n = 430000
         else:
             raise ValueError('Resolution unknown')
