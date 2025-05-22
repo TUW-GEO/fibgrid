@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.7
+=============
+
+- Make res (resolution) an attribute of the grid object
+
 Version 0.0.6
 =============
 
