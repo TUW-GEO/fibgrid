@@ -24,7 +24,6 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Download and read pre-computed Fibonacci grid files."""
 
 from pathlib import Path
@@ -49,7 +48,7 @@ DATA_URL = {
 CACHE_DIR = Path(user_cache_dir("fibgrid")) / __version__
 
 
-def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
+def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") -> tuple:
     """Read pre-computed grid files.
 
     Parameters
@@ -59,6 +58,10 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
         a pre-computed grid.
     geodatum : str, optional
         Definition of geodatum.
+    sort_order : str, optional
+        Choose sort order of gridpoints:
+        "none": original order
+        "latband": sorting in latitude bands starting from 90S to 90N.
 
     Returns
     -------
@@ -72,7 +75,6 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
         Grid point index starting at 0.
     metadata : dict
         Metadata information of the grid.
-
     """
     filename = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.nc"
 
@@ -82,6 +84,18 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
         urllib.request.urlretrieve(DATA_URL[f"n{n}_{geodatum.lower()}"], filename)
         print(f"Grid stored at {filename}")
 
+    if geodatum not in ["sphere", "WGS84"]:
+        raise ValueError(f"Geodatum unknown: {geodatum}")
+
+    if sort_order not in ["none", "latband"]:
+        raise ValueError(f"Grid point sort order unknown: {sort_order}")
+
+    filename = os.path.join(
+        os.path.dirname(__file__),
+        "files",
+        "fibgrid_{}_n{}.nc".format(geodatum.lower(), n),
+    )
+
     metadata_fields = [
         "land_frac_fw",
         "land_frac_hw",
@@ -89,7 +103,9 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
         "land_mask_fw",
         "land_flag",
     ]
+
     metadata_list = []
+
     with netCDF4.Dataset(filename) as fp:
         lon = fp.variables["lon"][:].data
         lat = fp.variables["lat"][:].data
@@ -97,6 +113,12 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
         gpi = fp.variables["gpi"][:].data
         for f in metadata_fields:
             metadata_list.append(fp.variables[f][:].data)
+        if sort_order != "none":
+            idx = fp.variables[f"{sort_order}_sorting"][:].data
+            lon = lon[idx]
+            lat = lat[idx]
+            cell = cell[idx]
+            gpi = gpi[idx]
 
     metadata = np.rec.fromarrays(metadata_list, names=metadata_fields)
 
@@ -106,7 +128,9 @@ def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
 class FibGrid(CellGrid):
     """Fibonacci grid."""
 
-    def __init__(self, res: float, geodatum: str = "WGS84") -> None:
+    def __init__(
+        self, res: float, geodatum: str = "WGS84", sort_order: str = "none"
+    ) -> None:
         """Initialize FibGrid.
 
         Parameters
@@ -115,9 +139,15 @@ class FibGrid(CellGrid):
             Sampling.
         geodatum : str, optional
             Geodatum (default: 'WGS84')
-
+        sort_order : str, optional
+            Sort order of grid points (default: "none")
+            Available options
+              - "none": original order
+              - "latband": points are ordered in latitude bands
         """
         self.res = res
+        self.lut = None
+
         if self.res == 6.25:
             n = 6600000
         elif self.res == 12.5:
@@ -127,14 +157,19 @@ class FibGrid(CellGrid):
         else:
             raise ValueError("Resolution unknown")
 
-        lon, lat, cell, gpi, self.metadata = read_grid_file(n, geodatum=geodatum)
+        lon, lat, cell, gpi, self.metadata = read_grid_file(
+            n, geodatum=geodatum, sort_order=sort_order
+        )
+
         super().__init__(lon, lat, cell, gpi, geodatum=geodatum)
 
 
 class FibLandGrid(CellGrid):
     """Fibonacci grid with active points over land defined by land fraction."""
 
-    def __init__(self, res: float, geodatum: str = "WGS84") -> None:
+    def __init__(
+        self, res: float, geodatum: str = "WGS84", sort_order: str = "none"
+    ) -> None:
         """Initialize FibGrid.
 
         Parameters
@@ -143,9 +178,13 @@ class FibLandGrid(CellGrid):
             Sampling.
         geodatum : str, optional
             Geodatum (default: 'WGS84')
-
+        sort_order : str, optional
+            Choose sort order of gridpoints:
+            - "none": original order
+            - "latband": sorting in latitude bands starting from 90S to 90N.
         """
         self.res = res
+
         if self.res == 6.25:
             n = 6600000
         elif self.res == 12.5:
@@ -155,7 +194,9 @@ class FibLandGrid(CellGrid):
         else:
             raise ValueError("Resolution unknown")
 
-        lon, lat, cell, gpi, self.metadata = read_grid_file(n, geodatum=geodatum)
+        lon, lat, cell, gpi, self.metadata = read_grid_file(
+            n, geodatum=geodatum, sort_order=sort_order
+        )
 
         subset = np.nonzero(self.metadata["land_flag"])[0]
 
