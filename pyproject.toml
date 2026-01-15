@@ -19,6 +19,8 @@ dependencies = [
     "netcdf4>=1.7.3",
     "numba>=0.63.1",
     "numpy>=2.2.6",
+    "pip>=25.3",
+    "platformdirs>=4.5.1",
     "pygeogrids>=0.5.3",
     "pyproj>=3.7.1",
 ]
