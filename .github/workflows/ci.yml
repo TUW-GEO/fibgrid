@@ -7,82 +7,65 @@ on:
     - cron: "0 0 * * *" # daily
 
 jobs:
-
   build:
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.12']
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-    name: py${{ matrix.python-version }}@${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+        os:
+          - ubuntu-latest
+          - windows-latest
+          # - macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
         with:
-          submodules: false # does not work with self-hosted testdata
-      - name: Checkout test data
-        shell: bash -l {0}
-        run : |
-          git submodule init
-          git submodule sync
-          git submodule update
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniconda-version: "latest"
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          environment-file: environment.yml
-          activate-environment: pytesmo
-          channel-priority: flexible
-          auto-activate-base: false
-      - name: Print infos
-        shell: bash -l {0}
-        run: |
-          git status
-          conda info -a
-          conda list
-          pip list
-          which pip
-          which python
-      - name: Export Environment
-        shell: bash -l {0}
-        run: |
-          mkdir -p .artifacts
-          filename=env_py${{ matrix.python-version }}_${{ matrix.os }}.yml
-          conda env export --no-builds | grep -v "prefix" > .artifacts/$filename
-      - name: Install package and test
-        shell: bash -l {0}
-        run: |
-          pip install -e .[testing]
-          pytest --cache-clear
-      - name: Upload Coverage
-        shell: bash -l {0}
-        run: |
-          pip install coveralls && coveralls --service=github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-          COVERALLS_PARALLEL: true
-      - name: Create wheel and dist package
-        shell: bash -l {0}
-        run: |
-          git status
-          pip install setuptools_scm
-          python setup.py sdist --dist-dir .artifacts/dist
-          ls .artifacts/dist
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts
-          path: .artifacts/*
-  coveralls:
-    name: Submit Coveralls
-    needs: build
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the Project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run Tests
+        run: uv run pytest tests --verbose --color=yes --cov=fibgrid --cov-report term-missing
+
+  coverage:
     runs-on: ubuntu-latest
-    container: python:3-slim
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
-      - name: Finished
+      - uses: actions/checkout@v5
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: 3.13
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install the Project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run Tests
         run: |
-          pip3 install --upgrade coveralls && coveralls --service=github --finish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          uv run pytest tests --verbose --color=yes --cov=fibgrid --cov-report term-missing
+
+      - name: Coverage comment
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          d         VERBOSE: false
