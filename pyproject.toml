@@ -16,18 +16,12 @@ description = "Construction of Fibonacci grid"
 readme = "README.rst"
 requires-python = ">=3.11"
 dependencies = [
-    "flake8>=7.3.0",
     "netcdf4>=1.7.3",
     "numba>=0.63.1",
     "numpy>=2.2.6",
-    "pip>=25.3",
     "platformdirs>=4.5.1",
-    "pre-commit>=4.5.1",
     "pygeogrids>=0.5.3",
     "pyproj>=3.7.1",
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
-    "ruff>=0.14.11",
 ]
 
 classifiers = [
@@ -40,6 +34,22 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: POSIX",
     "Natural Language :: English",
+]
+
+[dependency-groups]
+dev = [
+  {include-group = "lint"},
+  {include-group = "test"}
+]
+test = [
+    "pip>=25.3",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+]
+lint = [
+    "flake8>=7.3.0",
+    "ruff>=0.14.12",
 ]
 
 [tool.ruff]
