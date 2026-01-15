@@ -57,13 +57,13 @@ Three different Fibonacci grids can be directly loaded with different sampling d
 Citation
 ========
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.14187002.svg
-   :target: https://doi.org/10.5281/zenodo.14187002
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.14187001.svg
+   :target: https://doi.org/10.5281/zenodo.14187001
 
 If you use the software in a publication then please cite it using the Zenodo
 DOI. Be aware that this badge links to the latest package version.
 
-Please select your specific version at https://doi.org/10.5281/zenodo.14187002 to
+Please select your specific version at https://doi.org/10.5281/zenodo.14187001 to
 get the DOI of that version. You should normally always use the DOI for the
 specific version of your record in citations. This is to ensure that other
 researchers can access the exact research artefact you used for reproducibility.
