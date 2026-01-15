@@ -14,7 +14,7 @@ name = "fibgrid"
 version = "0.0.7"
 description = "Construction of Fibonacci grid"
 readme = "README.rst"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "netcdf4>=1.7.3",
     "numba>=0.63.1",

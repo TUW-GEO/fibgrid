@@ -40,13 +40,16 @@ jobs:
       - name: Run Tests
         run: uv run pytest tests --verbose --color=yes --cov=fibgrid --cov-report term-missing
 
+
   coverage:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: write
+
     steps:
       - uses: actions/checkout@v5
+
       - name: Install uv and set the python version
         uses: astral-sh/setup-uv@v6
         with:
@@ -61,11 +64,15 @@ jobs:
 
       - name: Run Tests
         run: |
-          uv run pytest tests --verbose --color=yes --cov=fibgrid --cov-report term-missing
+          uv run pytest tests \
+            --verbose --color=yes \
+            --cov=fibgrid \
+            --cov-report term-missing \
+            --cov-report xml
 
       - name: Coverage comment
-        id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          d         VERBOSE: false
+          coverage_file: coverage.xml
+          VERBOSE: false
