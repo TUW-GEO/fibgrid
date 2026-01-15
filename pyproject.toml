@@ -80,3 +80,4 @@ docstring-code-line-length = "dynamic"
 
 [tool.coverage.run]
 relative_files = true
+source = ["fibgrid"]
