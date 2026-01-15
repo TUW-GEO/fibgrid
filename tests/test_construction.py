@@ -1,4 +1,4 @@
-# Copyright (c) 2024, TU Wien
+# Copyright (c) 2026, TU Wien
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ from fibgrid.construction import compute_fib_grid
 
 
 class TestConstruction(unittest.TestCase):
-
     def setUp(self):
         """
         Define grids.
@@ -51,5 +50,5 @@ class TestConstruction(unittest.TestCase):
             np.testing.assert_equal(gpi, np.arange(points.size))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

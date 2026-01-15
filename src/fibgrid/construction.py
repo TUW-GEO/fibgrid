@@ -25,9 +25,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-Construct Fibonacci grid.
-"""
+"""Construct Fibonacci grid."""
 
 import numpy as np
 from numba import jit
@@ -35,9 +33,8 @@ from pyproj import CRS, Transformer
 
 
 @jit(nopython=True, cache=True)
-def compute_fib_grid(n):
-    """
-    Computation of Fibonacci lattice on a sphere.
+def compute_fib_grid(n: int) -> tuple:
+    """Compute Fibonacci lattice on a sphere.
 
     Parameters
     ----------
@@ -54,6 +51,7 @@ def compute_fib_grid(n):
         Longitude coordinate.
     lat : numpy.ndarray
         Latitude coordinate.
+
     """
     points = np.arange(-n, n + 1)
     gpi = np.arange(points.size)
@@ -72,15 +70,14 @@ def compute_fib_grid(n):
     return points, gpi, lon, lat
 
 
-def compute_fib_grid_wgs84(n):
-    """
-    Computation of Fibonacci lattice on a sphere and coordinated transformed
-    to WGS84 ellipsoid.
+def compute_fib_grid_wgs84(n: int) -> tuple:
+    """Compute Fibonacci lattice on a sphere and transform coordinates (WGS84).
 
     Parameters
     ----------
     n : int
         Number of grid points in the Fibonacci lattice.
+
     """
     crs_wgs84 = CRS.from_epsg(4326)
     crs_sphere = CRS.from_proj4("+proj=lonlat +ellps=sphere +R=6370997 +towgs84=0,0,0")
