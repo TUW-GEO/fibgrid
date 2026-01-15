@@ -1,4 +1,4 @@
-# Copyright (c) 2024, TU Wien
+# Copyright (c) 2026, TU Wien
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,40 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-Read pre-computed Fibonacci grid files.
-"""
+"""Download and read pre-computed Fibonacci grid files."""
 
-import os
+from pathlib import Path
+from platformdirs import user_cache_dir
+import urllib.request
+
 import netCDF4
 import numpy as np
-
 from pygeogrids.grids import CellGrid
 
+from fibgrid import __version__
 
-def read_grid_file(n, geodatum='WGS84'):
-    """
-    Read pre-computed grid files.
+DATA_URL = {
+    "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n430000.nc",
+    "n430000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n430000.nc",
+    "n1650000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n1650000.nc",
+    "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n1650000.nc",
+    "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n6600000.nc",
+    "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n6600000.nc",
+}
+
+CACHE_DIR = Path(user_cache_dir("fibgrid")) / __version__
+
+
+def read_grid_file(n: int, geodatum: str = "WGS84") -> tuple:
+    """Read pre-computed grid files.
 
     Parameters
     ----------
     n : int
         Number of grid in the Fibonacci lattice used to identify
         a pre-computed grid.
+    geodatum : str, optional
+        Definition of geodatum.
 
     Returns
     -------
@@ -58,20 +72,29 @@ def read_grid_file(n, geodatum='WGS84'):
         Grid point index starting at 0.
     metadata : dict
         Metadata information of the grid.
-    """
-    filename = os.path.join(
-        os.path.dirname(__file__), 'files',
-        'fibgrid_{}_n{}.nc'.format(geodatum.lower(), n))
 
-    metadata_fields = ['land_frac_fw', 'land_frac_hw',
-                       'land_mask_hw', 'land_mask_fw',
-                       'land_flag']
+    """
+    filename = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.nc"
+
+    if not filename.exists():
+        print(f"Downloading grid file {filename.name} ...")
+        filename.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(DATA_URL[f"n{n}_{geodatum.lower()}"], filename)
+        print(f"Grid stored at {filename}")
+
+    metadata_fields = [
+        "land_frac_fw",
+        "land_frac_hw",
+        "land_mask_hw",
+        "land_mask_fw",
+        "land_flag",
+    ]
     metadata_list = []
     with netCDF4.Dataset(filename) as fp:
-        lon = fp.variables['lon'][:].data
-        lat = fp.variables['lat'][:].data
-        cell = fp.variables['cell'][:].data
-        gpi = fp.variables['gpi'][:].data
+        lon = fp.variables["lon"][:].data
+        lat = fp.variables["lat"][:].data
+        cell = fp.variables["cell"][:].data
+        gpi = fp.variables["gpi"][:].data
         for f in metadata_fields:
             metadata_list.append(fp.variables[f][:].data)
 
@@ -81,14 +104,10 @@ def read_grid_file(n, geodatum='WGS84'):
 
 
 class FibGrid(CellGrid):
+    """Fibonacci grid."""
 
-    """
-    Fibonacci grid.
-    """
-
-    def __init__(self, res, geodatum='WGS84'):
-        """
-        Initialize FibGrid.
+    def __init__(self, res: float, geodatum: str = "WGS84") -> None:
+        """Initialize FibGrid.
 
         Parameters
         ----------
@@ -96,6 +115,7 @@ class FibGrid(CellGrid):
             Sampling.
         geodatum : str, optional
             Geodatum (default: 'WGS84')
+
         """
         self.res = res
         if self.res == 6.25:
@@ -105,22 +125,17 @@ class FibGrid(CellGrid):
         elif self.res == 25:
             n = 430000
         else:
-            raise ValueError('Resolution unknown')
+            raise ValueError("Resolution unknown")
 
-        lon, lat, cell, gpi, self.metadata = read_grid_file(
-            n, geodatum=geodatum)
+        lon, lat, cell, gpi, self.metadata = read_grid_file(n, geodatum=geodatum)
         super().__init__(lon, lat, cell, gpi, geodatum=geodatum)
 
 
 class FibLandGrid(CellGrid):
+    """Fibonacci grid with active points over land defined by land fraction."""
 
-    """
-    Fibonacci grid with active points over land defined by land fraction.
-    """
-
-    def __init__(self, res, geodatum='WGS84'):
-        """
-        Initialize FibGrid.
+    def __init__(self, res: float, geodatum: str = "WGS84") -> None:
+        """Initialize FibGrid.
 
         Parameters
         ----------
@@ -128,6 +143,7 @@ class FibLandGrid(CellGrid):
             Sampling.
         geodatum : str, optional
             Geodatum (default: 'WGS84')
+
         """
         self.res = res
         if self.res == 6.25:
@@ -137,11 +153,10 @@ class FibLandGrid(CellGrid):
         elif self.res == 25:
             n = 430000
         else:
-            raise ValueError('Resolution unknown')
+            raise ValueError("Resolution unknown")
 
-        lon, lat, cell, gpi, self.metadata = read_grid_file(
-            n, geodatum=geodatum)
+        lon, lat, cell, gpi, self.metadata = read_grid_file(n, geodatum=geodatum)
 
-        subset = np.nonzero(self.metadata['land_flag'])[0]
+        subset = np.nonzero(self.metadata["land_flag"])[0]
 
         super().__init__(lon, lat, cell, gpi, subset=subset, geodatum=geodatum)
