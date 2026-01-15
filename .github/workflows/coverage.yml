@@ -29,12 +29,7 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Run Tests
-        run: |
-          uv run pytest tests \
-            --verbose --color=yes \
-            --cov=fibgrid \
-            --cov-report term-missing \
-            --cov-report xml
+        run: uv run pytest tests --verbose --color=yes --cov=fibgrid --cov-report term-missing --cov-report xml
 
       - name: Coverage comment
         uses: py-cov-action/python-coverage-comment-action@v3
