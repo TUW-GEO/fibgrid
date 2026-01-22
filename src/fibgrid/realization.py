@@ -82,7 +82,7 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
 
     if not filename.exists():
         warnings.warn(
-            "You are about to download the fibonacci grid file: {filename.name}",
+            f"You are about to download the fibonacci grid file: {filename.name}",
             UserWarning,
         )
         filename.parent.mkdir(parents=True, exist_ok=True)
