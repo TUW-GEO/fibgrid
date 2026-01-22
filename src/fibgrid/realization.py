@@ -29,6 +29,8 @@
 from pathlib import Path
 from platformdirs import user_cache_dir
 import urllib.request
+import warnings
+
 
 import netCDF4
 import numpy as np
@@ -37,12 +39,12 @@ from pygeogrids.grids import CellGrid
 from fibgrid import __version__
 
 DATA_URL = {
-    "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n430000.nc",
-    "n430000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n430000.nc",
-    "n1650000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n1650000.nc",
-    "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n1650000.nc",
-    "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_sphere_n6600000.nc",
-    "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.7/fibgrid_wgs84_n6600000.nc",
+    "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n430000.nc",
+    "n430000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n430000.nc",
+    "n1650000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n1650000.nc",
+    "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n1650000.nc",
+    "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n6600000.nc",
+    "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n6600000.nc",
 }
 
 CACHE_DIR = Path(user_cache_dir("fibgrid")) / __version__
@@ -79,22 +81,18 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
     filename = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.nc"
 
     if not filename.exists():
-        print(f"Downloading grid file {filename.name} ...")
+        warnings.warn(
+            "You are about to download the fibonacci grid file: {filename.name}",
+            UserWarning,
+        )
         filename.parent.mkdir(parents=True, exist_ok=True)
         urllib.request.urlretrieve(DATA_URL[f"n{n}_{geodatum.lower()}"], filename)
-        print(f"Grid stored at {filename}")
 
     if geodatum not in ["sphere", "WGS84"]:
         raise ValueError(f"Geodatum unknown: {geodatum}")
 
     if sort_order not in ["none", "latband"]:
         raise ValueError(f"Grid point sort order unknown: {sort_order}")
-
-    filename = os.path.join(
-        os.path.dirname(__file__),
-        "files",
-        "fibgrid_{}_n{}.nc".format(geodatum.lower(), n),
-    )
 
     metadata_fields = [
         "land_frac_fw",
@@ -111,14 +109,17 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
         lat = fp.variables["lat"][:].data
         cell = fp.variables["cell"][:].data
         gpi = fp.variables["gpi"][:].data
-        for f in metadata_fields:
-            metadata_list.append(fp.variables[f][:].data)
         if sort_order != "none":
             idx = fp.variables[f"{sort_order}_sorting"][:].data
             lon = lon[idx]
             lat = lat[idx]
             cell = cell[idx]
             gpi = gpi[idx]
+            for f in metadata_fields:
+                metadata_list.append(fp.variables[f][:].data[idx])
+        else:
+            for f in metadata_fields:
+                metadata_list.append(fp.variables[f][:].data)
 
     metadata = np.rec.fromarrays(metadata_list, names=metadata_fields)
 
