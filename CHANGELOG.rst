@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.8
+=============
+
+- Add sorted option for 6.25 and 12.5 km Fibonacci grid
+
 Version 0.0.7
 =============
 
