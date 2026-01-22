@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.9
+=============
+
+- Fix dependencies
+
 Version 0.0.8
 =============
 
