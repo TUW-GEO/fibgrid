@@ -5,9 +5,9 @@
 | Name                        |    Stmts |     Miss |   Cover |   Missing |
 |---------------------------- | -------: | -------: | ------: | --------: |
 | src/fibgrid/\_\_init\_\_.py |        6 |        0 |    100% |           |
-| src/fibgrid/construction.py |       30 |       24 |     20% |55-69, 81-95 |
-| src/fibgrid/realization.py  |       65 |       21 |     68% |92, 95, 113-119, 159, 187-204 |
-| **TOTAL**                   |  **101** |   **45** | **55%** |           |
+| src/fibgrid/construction.py |       30 |       24 |     20% |33-47, 59-73 |
+| src/fibgrid/realization.py  |       74 |        5 |     93% |85, 153, 184, 186, 190 |
+| **TOTAL**                   |  **110** |   **29** | **74%** |           |
 
 
 ## Setup coverage badge
