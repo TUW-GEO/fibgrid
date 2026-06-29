@@ -102,7 +102,13 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
     metadata_list = [np.asarray(grid[f][:]) for f in METADATA_FIELDS]
 
     if sort_order != "none":
-        idx = np.asarray(grid[f"{sort_order}_sorting"][:])
+        sorting_var = f"{sort_order}_sorting"
+        if sorting_var not in grid:
+            raise ValueError(
+                f"Sort order '{sort_order}' not available for grid "
+                f"fibgrid_{geodatum.lower()}_n{n}"
+            )
+        idx = np.asarray(grid[sorting_var][:])
         lon = lon[idx]
         lat = lat[idx]
         cell = cell[idx]
