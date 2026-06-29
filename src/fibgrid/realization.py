@@ -1,39 +1,19 @@
-# Copyright (c) 2026, TU Wien
-# All rights reserved.
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Copyright (c) 2026 TU Wien
+# SPDX-FileContributor: For a full list of authors, see the AUTHORS file.
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#    * Redistributions of source code must retain the above copyright notice,
-#      this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above copyright
-#      notice, this list of conditions and the following disclaimer in the
-#      documentation and/or other materials provided with the distribution.
-#    * Neither the name of TU Wien, Department of Geodesy and Geoinformation
-#      nor the names of its contributors may be used to endorse or promote
-#      products derived from this software without specific prior written
-#      permission.
-
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL TU WIEN DEPARTMENT OF GEODESY AND
-# GEOINFORMATION BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Download and read pre-computed Fibonacci grid files."""
 
 from pathlib import Path
 from platformdirs import user_cache_dir
 import urllib.request
 import warnings
+import zipfile
 
 
 import netCDF4
 import numpy as np
+import zarr
 from pygeogrids.grids import CellGrid
 
 from fibgrid import __version__
@@ -45,6 +25,15 @@ DATA_URL = {
     "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n1650000.nc",
     "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n6600000.nc",
     "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n6600000.nc",
+}
+
+DATA_URL_ZARR = {
+    "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_sphere_n430000.zarr.zip",
+    "n430000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_wgs84_n430000.zarr.zip",
+    "n1650000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_sphere_n1650000.zarr.zip",
+    "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_wgs84_n1650000.zarr.zip",
+    "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_sphere_n6600000.zarr.zip",
+    "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_wgs84_n6600000.zarr.zip",
 }
 
 CACHE_DIR = Path(user_cache_dir("fibgrid")) / __version__
@@ -124,6 +113,81 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
     metadata = np.rec.fromarrays(metadata_list, names=metadata_fields)
 
     return lon, lat, cell, gpi, metadata
+
+
+def read_grid_zarr(
+    n: int, geodatum: str = "WGS84", sort_order: str = "none"
+) -> tuple:
+    """Read a pre-computed grid from a hosted Zarr artifact.
+
+    The grid is distributed as a single ``.zarr.zip`` file. On first use the
+    archive is downloaded and extracted into a Zarr directory store inside the
+    cache directory; subsequent reads use that on-disk store directly. Unlike
+    :func:`read_grid_file`, the Zarr artifact only contains the grid coordinates
+    (no land metadata).
+
+    Parameters
+    ----------
+    n : int
+        Number of grid points in the Fibonacci lattice used to identify
+        a pre-computed grid.
+    geodatum : str, optional
+        Definition of geodatum.
+    sort_order : str, optional
+        Choose sort order of gridpoints:
+        "none": original order
+        "latband": sorting in latitude bands starting from 90S to 90N.
+
+    Returns
+    -------
+    lon : numpy.ndarray
+        Longitude coordinate.
+    lat : numpy.ndarray
+        Latitude coordinate.
+    cell : numpy.ndarray
+        Cell number.
+    gpi : numpy.ndarray
+        Grid point index starting at 0.
+    """
+    if geodatum not in ["sphere", "WGS84"]:
+        raise ValueError(f"Geodatum unknown: {geodatum}")
+
+    if sort_order not in ["none", "latband"]:
+        raise ValueError(f"Grid point sort order unknown: {sort_order}")
+
+    zarr_dir = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.zarr"
+
+    if not zarr_dir.exists():
+        zip_path = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.zarr.zip"
+        if not zip_path.exists():
+            url = DATA_URL_ZARR.get(f"n{n}_{geodatum.lower()}", "")
+            if not url:
+                raise ValueError(f"No download URL for {zip_path.name}")
+            warnings.warn(
+                f"You are about to download the fibonacci grid file: {zip_path.name}",
+                UserWarning,
+            )
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            urllib.request.urlretrieve(url, zip_path)
+
+        with zipfile.ZipFile(zip_path) as zf:
+            zf.extractall(zarr_dir)
+        zip_path.unlink()
+
+    grid = zarr.open_group(str(zarr_dir), mode="r")
+    lon = np.asarray(grid["lon"][:])
+    lat = np.asarray(grid["lat"][:])
+    cell = np.asarray(grid["cell"][:])
+    gpi = np.asarray(grid["gpi"][:])
+
+    if sort_order != "none":
+        idx = np.asarray(grid[f"{sort_order}_sorting"][:])
+        lon = lon[idx]
+        lat = lat[idx]
+        cell = cell[idx]
+        gpi = gpi[idx]
+
+    return lon, lat, cell, gpi
 
 
 class FibGrid(CellGrid):

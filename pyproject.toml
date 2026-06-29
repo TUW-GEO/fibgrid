@@ -12,6 +12,7 @@ dependencies = [
     "platformdirs>=4.5.1",
     "pygeogrids>=0.5.3",
     "pyproj>=3.7.1",
+    "zarr>=2.18.3",
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
