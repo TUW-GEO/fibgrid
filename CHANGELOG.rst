@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.0.10
+==============
+
+- Switch from NetCDF to zarr FibGrid files
+
 Version 0.0.9
 =============
 

@@ -46,6 +46,8 @@ Three different Fibonacci grids can be directly loaded with different sampling d
 - approx. 12.5 km (N=1,650,000)
 - approx. 25 km (N=430,000)
 
+The grids are distributed as compressed `Zarr <https://zarr.dev/>`_ archives. On first use the required grid is downloaded and extracted into a local cache directory (``platformdirs`` user cache) - subsequent loads read it directly from disk.
+
 .. code-block:: python
 
     from fibgrid.realization import FibGrid
@@ -53,6 +55,30 @@ Three different Fibonacci grids can be directly loaded with different sampling d
     sampling = 12.5
     sphere_fb = FibGrid(sampling, geodatum="sphere")
     wgs84_fb = FibGrid(sampling, geodatum="WGS84")
+
+Grid points can optionally be sorted in latitude bands (from 90S to 90N). This
+is available for the 6.25 km and 12.5 km grids:
+
+.. code-block:: python
+
+    sorted_fb = FibGrid(12.5, geodatum="WGS84", sort_order="latband")
+
+``FibLandGrid`` restricts the grid to points over land:
+
+.. code-block:: python
+
+    from fibgrid.realization import FibLandGrid
+
+    land_fb = FibLandGrid(12.5, geodatum="WGS84")
+
+The underlying arrays (longitude, latitude, cell, grid point index and land
+metadata) can also be read directly:
+
+.. code-block:: python
+
+    from fibgrid.realization import read_grid_file
+
+    lon, lat, cell, gpi, metadata = read_grid_file(1650000, geodatum="WGS84")
 
 Citation
 ========
