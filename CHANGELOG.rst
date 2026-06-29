@@ -5,7 +5,10 @@ Changelog
 Version 0.0.10
 ==============
 
-- Switch from NetCDF to zarr FibGrid files
+- Distribute the pre-computed Fibonacci grids as compressed Zarr archives
+- Remove the ``netcdf4`` runtime dependency; require ``zarr>=3.0.0``.
+- Drop Python 3.10 support (require Python >=3.11)
+- Update copyright to TU Wien and standardize MIT SPDX license headers.
 
 Version 0.0.9
 =============
