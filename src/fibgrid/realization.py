@@ -11,21 +11,19 @@ import warnings
 import zipfile
 
 
-import netCDF4
 import numpy as np
 import zarr
 from pygeogrids.grids import CellGrid
 
 from fibgrid import __version__
 
-DATA_URL = {
-    "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n430000.nc",
-    "n430000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n430000.nc",
-    "n1650000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n1650000.nc",
-    "n1650000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n1650000.nc",
-    "n6600000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_sphere_n6600000.nc",
-    "n6600000_wgs84": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.8/fibgrid_wgs84_n6600000.nc",
-}
+METADATA_FIELDS = [
+    "land_frac_fw",
+    "land_frac_hw",
+    "land_mask_hw",
+    "land_mask_fw",
+    "land_flag",
+]
 
 DATA_URL_ZARR = {
     "n430000_sphere": "https://github.com/TUW-GEO/fibgrid/releases/download/v0.0.9/fibgrid_sphere_n430000.zarr.zip",
@@ -40,7 +38,11 @@ CACHE_DIR = Path(user_cache_dir("fibgrid")) / __version__
 
 
 def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") -> tuple:
-    """Read pre-computed grid files.
+    """Read a pre-computed grid from a hosted Zarr artifact.
+
+    The grid is distributed as a single ``.zarr.zip`` file. On first use the
+    archive is downloaded and extracted into a Zarr directory store inside the
+    cache directory; subsequent reads use that on-disk store directly.
 
     Parameters
     ----------
@@ -64,90 +66,8 @@ def read_grid_file(n: int, geodatum: str = "WGS84", sort_order: str = "none") ->
         Cell number.
     gpi : numpy.ndarray
         Grid point index starting at 0.
-    metadata : dict
+    metadata : numpy.recarray
         Metadata information of the grid.
-    """
-    filename = CACHE_DIR / f"fibgrid_{geodatum.lower()}_n{n}.nc"
-
-    if not filename.exists():
-        warnings.warn(
-            f"You are about to download the fibonacci grid file: {filename.name}",
-            UserWarning,
-        )
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(DATA_URL[f"n{n}_{geodatum.lower()}"], filename)
-
-    if geodatum not in ["sphere", "WGS84"]:
-        raise ValueError(f"Geodatum unknown: {geodatum}")
-
-    if sort_order not in ["none", "latband"]:
-        raise ValueError(f"Grid point sort order unknown: {sort_order}")
-
-    metadata_fields = [
-        "land_frac_fw",
-        "land_frac_hw",
-        "land_mask_hw",
-        "land_mask_fw",
-        "land_flag",
-    ]
-
-    metadata_list = []
-
-    with netCDF4.Dataset(filename) as fp:
-        lon = fp.variables["lon"][:].data
-        lat = fp.variables["lat"][:].data
-        cell = fp.variables["cell"][:].data
-        gpi = fp.variables["gpi"][:].data
-        if sort_order != "none":
-            idx = fp.variables[f"{sort_order}_sorting"][:].data
-            lon = lon[idx]
-            lat = lat[idx]
-            cell = cell[idx]
-            gpi = gpi[idx]
-            for f in metadata_fields:
-                metadata_list.append(fp.variables[f][:].data[idx])
-        else:
-            for f in metadata_fields:
-                metadata_list.append(fp.variables[f][:].data)
-
-    metadata = np.rec.fromarrays(metadata_list, names=metadata_fields)
-
-    return lon, lat, cell, gpi, metadata
-
-
-def read_grid_zarr(
-    n: int, geodatum: str = "WGS84", sort_order: str = "none"
-) -> tuple:
-    """Read a pre-computed grid from a hosted Zarr artifact.
-
-    The grid is distributed as a single ``.zarr.zip`` file. On first use the
-    archive is downloaded and extracted into a Zarr directory store inside the
-    cache directory; subsequent reads use that on-disk store directly. Unlike
-    :func:`read_grid_file`, the Zarr artifact only contains the grid coordinates
-    (no land metadata).
-
-    Parameters
-    ----------
-    n : int
-        Number of grid points in the Fibonacci lattice used to identify
-        a pre-computed grid.
-    geodatum : str, optional
-        Definition of geodatum.
-    sort_order : str, optional
-        Choose sort order of gridpoints:
-        "none": original order
-        "latband": sorting in latitude bands starting from 90S to 90N.
-
-    Returns
-    -------
-    lon : numpy.ndarray
-        Longitude coordinate.
-    lat : numpy.ndarray
-        Latitude coordinate.
-    cell : numpy.ndarray
-        Cell number.
-    gpi : numpy.ndarray
-        Grid point index starting at 0.
     """
     if geodatum not in ["sphere", "WGS84"]:
         raise ValueError(f"Geodatum unknown: {geodatum}")
@@ -179,6 +99,7 @@ def read_grid_zarr(
     lat = np.asarray(grid["lat"][:])
     cell = np.asarray(grid["cell"][:])
     gpi = np.asarray(grid["gpi"][:])
+    metadata_list = [np.asarray(grid[f][:]) for f in METADATA_FIELDS]
 
     if sort_order != "none":
         idx = np.asarray(grid[f"{sort_order}_sorting"][:])
@@ -186,8 +107,11 @@ def read_grid_zarr(
         lat = lat[idx]
         cell = cell[idx]
         gpi = gpi[idx]
+        metadata_list = [m[idx] for m in metadata_list]
 
-    return lon, lat, cell, gpi
+    metadata = np.rec.fromarrays(metadata_list, names=METADATA_FIELDS)
+
+    return lon, lat, cell, gpi, metadata
 
 
 class FibGrid(CellGrid):
