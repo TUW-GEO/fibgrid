@@ -6,8 +6,8 @@
 |---------------------------- | -------: | -------: | ------: | --------: |
 | src/fibgrid/\_\_init\_\_.py |        6 |        0 |    100% |           |
 | src/fibgrid/construction.py |       30 |       24 |     20% |33-47, 59-73 |
-| src/fibgrid/realization.py  |       74 |        5 |     93% |85, 153, 184, 186, 190 |
-| **TOTAL**                   |  **110** |   **29** | **74%** |           |
+| src/fibgrid/realization.py  |       74 |        0 |    100% |           |
+| **TOTAL**                   |  **110** |   **24** | **78%** |           |
 
 
 ## Setup coverage badge
